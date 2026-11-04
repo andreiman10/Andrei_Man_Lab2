@@ -1,4 +1,4 @@
-@page
+@page "{id:int?}"
 @model Andrei_Man_Lab2.Pages.CategoryPages.IndexModel
 
 @{
@@ -23,8 +23,14 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Category) {
-        <tr>
+        @foreach (var item in Model.CategoryData.Categories)
+        {
+            string selectedRow = "";
+            if (item.ID == Model.CategoryID)
+            {
+                selectedRow = "table-success";
+            }
+            <tr class="@selectedRow">
             <td>
                 @Html.DisplayFor(model => item.CategoryName)
             </td>
@@ -32,6 +38,7 @@
                 @Html.DisplayFor(model => item.BookCategories)
             </td>
             <td>
+                <a asp-page="./Index" asp-route-id="@item.ID">Select</a> |
                 <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |
                 <a asp-page="./Details" asp-route-id="@item.ID">Details</a> |
                 <a asp-page="./Delete" asp-route-id="@item.ID">Delete</a>
@@ -40,3 +47,16 @@
 }
     </tbody>
 </table>
+@if (Model.CategoryData.Books != null)
+{
+    <h3>Books in Selected Category</h3>
+    <table class="table">
+        @foreach (var b in Model.CategoryData.Books)
+        {
+            <tr>
+                <td>@b.Title</td>
+                <td>@b.Author?.FullName</td>
+            </tr>
+        }
+    </table>
+}

@@ -1,23 +1,41 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Andrei_Man_Lab2.Models;
+using Andrei_Man_Lab2.ViewModels;
 
-namespace Andrei_Man_Lab2.Pages.CategoryPages;
-
-public class IndexModel : PageModel
+namespace Andrei_Man_Lab2.Pages.CategoryPages
 {
-    private readonly Andrei_Man_Lab2Context _context;
-
-    public IndexModel(Andrei_Man_Lab2Context context)
+    public class IndexModel : PageModel
     {
-        _context = context;
-    }
+        private readonly Andrei_Man_Lab2Context _context;
 
-    public IList<Category> Category { get; set; } = default!;
+        public IndexModel(Andrei_Man_Lab2Context context)
+        {
+            _context = context;
+        }
 
-    public async Task OnGetAsync()
-    {
-        Category = await _context.Category.ToListAsync();
+        public IList<Category> Category { get; set; } = default!;
+
+        public CategoryIndexData CategoryData { get; set; }
+        public int CategoryID { get; set; }
+
+        public async Task OnGetAsync(int? id)
+        {
+            CategoryData = new CategoryIndexData();
+            CategoryData.Categories = await _context.Category
+                .Include(c => c.BookCategories)
+                    .ThenInclude(bc => bc.Book)
+                        .ThenInclude(b => b.Author)
+                .OrderBy(c => c.CategoryName)
+                .ToListAsync();
+
+            if (id != null)
+            {
+                CategoryID = id.Value;
+                Category category = CategoryData.Categories
+                    .Where(i => i.ID == id.Value).Single();
+                CategoryData.Books = category.BookCategories.Select(bc => bc.Book);
+            }
+        }
     }
 }
